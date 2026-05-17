@@ -3,7 +3,60 @@ from calculator_adapter import run
 
 
 ### ADD AT LEAST TWO TESTS HERE!
+name: 'Calculator CI'
+on:
+  push:
+  workflow_dispatch:
+  pull_request:
 
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    name: "Build Calculator"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+      - name: Run Makefile
+        run: |-
+          cd calculator
+          make
+  our_tests:
+    name: "Run Example Tests"
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+      - name: Run Makefile
+        run: |-
+          cd calculator
+          make
+      - name: Run test
+        run: |-
+          cd calculator/tests
+          python3 example_tests.py
+  your_tests:
+    name: "Run Your Tests"
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+      - name: Run Makefile
+        run: |-
+          cd calculator
+          make
+      - name: Run test
+        run: |-
+          cd calculator/tests
+          OUTPUT_RUNS=True python3 your_tests.py | tee ./output.txt \
+            && grep -q "TEST RUN:" ./output.txt \
+            && rm -f output.txt \
+          || (echo "ERROR: Either your tests failed or you didn't write any!" && false)
 
 ###
 
